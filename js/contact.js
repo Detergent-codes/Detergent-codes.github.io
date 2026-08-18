@@ -1,5 +1,9 @@
 /**
  * Contact Form Controller & Query Dispatcher
+ * Supports:
+ * 1. Direct Web3Forms Backend (zero-config direct email delivery)
+ * 2. Formspree API Endpoint
+ * 3. Desktop/Laptop Smart Dispatcher (Web Gmail, Web Outlook, Direct Copy & Fallback)
  */
 
 class ContactFormController {
@@ -17,12 +21,11 @@ class ContactFormController {
 
   init() {
     if (!this.form) return;
-
     this.bindEvents();
   }
 
   bindEvents() {
-    // Real-time character count
+    // Real-time character counter
     if (this.messageInput && this.charCountEl) {
       this.messageInput.addEventListener('input', () => {
         const count = this.messageInput.value.length;
@@ -35,7 +38,7 @@ class ContactFormController {
       });
     }
 
-    // Live validation on blur
+    // Live validation
     [this.nameInput, this.emailInput, this.messageInput].forEach((input) => {
       if (!input) return;
       input.addEventListener('blur', () => this.validateField(input));
@@ -46,7 +49,7 @@ class ContactFormController {
       });
     });
 
-    // Form submission
+    // Form submit
     this.form.addEventListener('submit', (e) => this.handleSubmit(e));
   }
 
@@ -110,7 +113,7 @@ class ContactFormController {
     e.preventDefault();
 
     if (!this.validateAll()) {
-      window.toast && window.toast('Please fix the errors before submitting.', 'warning');
+      window.toast && window.toast('Please fill out all required fields correctly.', 'warning');
       return;
     }
 
@@ -119,13 +122,44 @@ class ContactFormController {
     const subject = this.subjectSelect ? this.subjectSelect.value : 'General Inquiry';
     const message = this.messageInput.value.trim();
 
-    // Disable button during process
+    const contactCfg = (window.PORTFOLIO_CONFIG && window.PORTFOLIO_CONFIG.contact) || {};
+    const targetEmail = contactCfg.email || 'detergentcodes@gmail.com';
+
     this.setLoading(true);
 
     try {
-      // Check if user has configured Formspree / API endpoint
-      if (PORTFOLIO_CONFIG.contact.formspreeEndpoint) {
-        const response = await fetch(PORTFOLIO_CONFIG.contact.formspreeEndpoint, {
+      // 1. Check for Web3Forms Access Key (Instant free backend delivery)
+      if (contactCfg.web3FormsAccessKey) {
+        const response = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            access_key: contactCfg.web3FormsAccessKey,
+            name: name,
+            email: email,
+            subject: `[Portfolio] ${subject} from ${name}`,
+            message: message,
+            from_name: name
+          })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          window.toast && window.toast('Your message was sent directly to my inbox! I will reply soon.', 'success');
+          this.form.reset();
+          if (this.charCountEl) this.charCountEl.textContent = '0 / 1000';
+          return;
+        } else {
+          throw new Error(data.message || 'Web3Forms dispatch error');
+        }
+      }
+
+      // 2. Check for Formspree endpoint
+      if (contactCfg.formspreeEndpoint) {
+        const response = await fetch(contactCfg.formspreeEndpoint, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -135,33 +169,57 @@ class ContactFormController {
         });
 
         if (!response.ok) {
-          throw new Error('Endpoint submission failed.');
+          throw new Error('Formspree endpoint submission failed.');
         }
 
-        window.toast && window.toast('Your message has been sent successfully!', 'success');
-      } else {
-        // Compose mailto URI
-        const targetEmail = PORTFOLIO_CONFIG.contact.email || 'contact@example.com';
-        const mailtoSubject = encodeURIComponent(`[${subject}] Message from ${name}`);
-        const mailtoBody = encodeURIComponent(
-          `Hi,\n\nName: ${name}\nEmail: ${email}\nCategory: ${subject}\n\nMessage:\n${message}\n\nSent via Portfolio Contact Form`
-        );
-        const mailtoUrl = `mailto:${targetEmail}?subject=${mailtoSubject}&body=${mailtoBody}`;
-
-        // Trigger mail client
-        window.location.href = mailtoUrl;
-
-        window.toast && window.toast('Message prepared! Opening your mail client...', 'success');
+        window.toast && window.toast('Message delivered successfully! Thank you.', 'success');
+        this.form.reset();
+        if (this.charCountEl) this.charCountEl.textContent = '0 / 1000';
+        return;
       }
 
-      this.form.reset();
-      if (this.charCountEl) this.charCountEl.textContent = '0 / 1000';
+      // 3. Fallback Dispatcher for Desktops / Laptops (No backend configured yet)
+      // Generates Web Gmail, Web Outlook, and standard mailto
+      this.openSmartDesktopComposer({ name, email, subject, message, targetEmail });
+
     } catch (err) {
-      console.error(err);
-      window.toast && window.toast('Failed to dispatch message. Please try sending directly to email.', 'warning');
+      console.warn('Form dispatch exception:', err);
+      // Fallback to desktop composer modal
+      this.openSmartDesktopComposer({ name, email, subject, message, targetEmail });
     } finally {
       this.setLoading(false);
     }
+  }
+
+  /**
+   * Smart Desktop/Laptop Mail Dispatcher
+   * Works in every desktop browser by opening web Gmail / Outlook or direct clipboard copy
+   */
+  openSmartDesktopComposer(data) {
+    const { name, email, subject, message, targetEmail } = data;
+    const emailSubject = encodeURIComponent(`[${subject}] Query from ${name}`);
+    const emailBody = encodeURIComponent(
+      `Hi Aalok,\n\nName: ${name}\nEmail: ${email}\nCategory: ${subject}\n\nMessage:\n${message}\n\n---\nSent via Portfolio Website`
+    );
+
+    // Direct Web Gmail Compose URL (opens instantly in a browser tab)
+    const webGmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(targetEmail)}&su=${emailSubject}&body=${emailBody}`;
+    
+    // Direct Web Outlook Compose URL
+    const webOutlookUrl = `https://outlook.live.com/mail/0/deeplink/compose?to=${encodeURIComponent(targetEmail)}&subject=${emailSubject}&body=${emailBody}`;
+
+    // Standard mailto
+    const mailtoUrl = `mailto:${targetEmail}?subject=${emailSubject}&body=${emailBody}`;
+
+    // Open Web Gmail in new tab automatically
+    const newTab = window.open(webGmailUrl, '_blank');
+
+    if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+      // Pop-up was blocked or window.open failed -> fallback to mailto
+      window.location.href = mailtoUrl;
+    }
+
+    window.toast && window.toast('Opening Web Gmail in a new tab with your pre-filled message!', 'success');
   }
 
   setLoading(isLoading) {
@@ -172,7 +230,7 @@ class ContactFormController {
         <svg style="animation: spin 1s linear infinite; width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"></circle>
         </svg>
-        <span>Preparing Query...</span>
+        <span>Sending Query...</span>
       `;
     } else {
       this.submitBtn.disabled = false;

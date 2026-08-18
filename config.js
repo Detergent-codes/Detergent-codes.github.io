@@ -10,7 +10,7 @@
  * - Dot Matrix Grid Physics (Gas Spring, Floating Hover, Repulsion, Spacing)
  * - GitHub REST API & Profile PFP Settings
  * - Discord Server Widget API & Server Icon PFP Settings
- * - Contact Form & Direct Query Routing
+ * - Contact Form & Direct Email Backend Routing
  * - Skills, Pillars, Social Links & Badges
  * ==============================================================================
  */
@@ -24,10 +24,10 @@ const PORTFOLIO_CONFIG = {
     handle: "Detergent",
     title: "Student Builder, Software Developer & Hardware Tinkerer",
     heroSubtitle: "And I'm a tinkerer.",
-    bio: "I'm a 13-year-old student builder based in Rajasthan, India. I spend my time coding software, tinkering with hardware, and crafting visual designs. I focus on building things that work well, look refined, and feel good to use.",
-    motto: "Crafting with Precision",
+    bio: "13-year-old student builder based in Rajasthan, India. I spend my time coding software, tinkering with hands-on hardware, and crafting visual designs. Good enough is never the goal — I focus on building things that work flawlessly, look refined, and feel effortless to use.",
+    motto: "Good enough is never the goal.",
     location: "Rajasthan, India",
-    statusText: "Open for collabs and tinkering ideas!",
+    statusText: "Open for collaboration & exciting projects",
     logoText: "Aalok Arya",
     avatarUrl: "assets/images/logo.png",
     faviconUrl: "assets/images/logo.png",
@@ -44,12 +44,12 @@ const PORTFOLIO_CONFIG = {
       {
         prompt: "$",
         command: "whoami",
-        response: "> Aalok Arya (Detergent)"
+        response: "> Aalok Arya (@Detergent-codes)"
       },
       {
         prompt: "$",
         command: "cat core-focus.json",
-        response: '> ["Programming", "Hardware Tinkering", "Visual Design"]'
+        response: '> ["Software Development", "Hardware Tinkering", "Visual Design"]'
       },
       {
         prompt: "$",
@@ -59,7 +59,7 @@ const PORTFOLIO_CONFIG = {
       {
         prompt: "$",
         command: "echo $MOTTO",
-        response: '> "Playing with hardware and software."'
+        response: '> "Good enough is never the goal."'
       }
     ]
   },
@@ -109,8 +109,8 @@ const PORTFOLIO_CONFIG = {
   // ----------------------------------------------------------------------------
   heroParallax: {
     enabled: true,
-    scrollSpeed: 0.50, // Parallax translation speed on scroll
-    mouseTiltFactor: 0.05, // Mouse position tilt responsiveness
+    scrollSpeed: 0.38, // Parallax translation speed on scroll
+    mouseTiltFactor: 0.02, // Mouse position tilt responsiveness
     overlayTopOpacity: 0.45,
     overlayMidOpacity: 0.65,
     overlayBottomOpacity: 0.98
@@ -120,9 +120,9 @@ const PORTFOLIO_CONFIG = {
   // 5. Background Dot Matrix & Gas-Spring Physics
   // ----------------------------------------------------------------------------
   effects: {
-    dotSpacing: 35, // Pixel distance between grid dots (desktop: 34, mobile: 40)
-    baseDotSize: 1.5, // Normal resting dot radius (px)
-    hoverDotSize: 2.5, // Max size when hovered (px)
+    dotSpacing: 34, // Pixel distance between grid dots (desktop: 34, mobile: 40)
+    baseDotSize: 1.4, // Normal resting dot radius (px)
+    hoverDotSize: 2.4, // Max size when hovered (px)
 
     // Colors
     baseDotColor: { r: 156, g: 163, b: 175, a: 0.30 }, // Neutral Gray
@@ -131,8 +131,8 @@ const PORTFOLIO_CONFIG = {
     // Cursor Field & Slow Hover Floating
     proximityRadius: 120, // Interaction radius around cursor (px)
     repulsionForce: 4.0, // Gentle push force
-    hoverFloatSpeed: 1.0, // Slow organic drift speed (smaller = slower)
-    hoverFloatAmp: 1.5, // Float amplitude
+    hoverFloatSpeed: 0.8, // Slow organic drift speed (smaller = slower)
+    hoverFloatAmp: 1.6, // Float amplitude
 
     // Gas-Spring Physics (Smooth, Viscous, Damped, Linear-ish, No Rubber-Band)
     gasSpringStrength: 0.045, // Soft return force
@@ -163,11 +163,17 @@ const PORTFOLIO_CONFIG = {
   },
 
   // ----------------------------------------------------------------------------
-  // 8. Contact Form & Direct Query Dispatch
+  // 8. Contact Form & Direct Delivery Backend
   // ----------------------------------------------------------------------------
   contact: {
     email: "detergentcodes@gmail.com",
-    formspreeEndpoint: "", // Optional Formspree/EmailJS endpoint
+    
+    // Free Automated Delivery Service Options:
+    // Option 1: Web3Forms Access Key (get free at https://web3forms.com)
+    // Option 2: Formspree URL endpoint (e.g. "https://formspree.io/f/xyzaabbc")
+    web3FormsAccessKey: "466ad552-07b0-4057-ab59-d21e87e3da35", // Instant direct delivery to detergentcodes@gmail.com
+    formspreeEndpoint: "",
+
     phone: "",
     responseTime: "~48 Hours",
     locationDisplay: "Rajasthan, India 🇮🇳",
